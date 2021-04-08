@@ -1,2 +1,2 @@
-# FlexBackup
-A tool for more flexible minecraft world backups
+# WorldTools
+A python module / CLI for modifying minecraft worlds
