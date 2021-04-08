@@ -1,92 +1,11 @@
 from __future__ import annotations
 
-from typing import List, Tuple, Dict, Optional
-from os.path import join as joinpath
-from os.path import isfile
-from .util import ceil
+from typing import Tuple, Optional, TYPE_CHECKING
+from ..exceptions import ChunkNotFoundException
+from ..util import ceil
 
-
-class ChunkNotFoundException(Exception):
-    """
-    raised when a mentioned chunk is not present in the current world
-    """
-    def __init__(self, msg, chunk):
-        super(ChunkNotFoundException, self).__init__(msg)
-        self.chunk = chunk
-
-
-class ChunkRestorer:
-    """
-    class to transfer chunks from one world to another
-    """
-    def __init__(self, target_world: str, backup_world: str):
-        self.target_world: World = World(target_world)
-        self.backup_world: World = World(backup_world)
-        self.actions: List[Tuple[int, int]] = []
-
-    def add_chunk(self, chunk: Tuple[int, int]) -> None:
-        """
-        adds a chunk for transmission
-        :param chunk: the chunk to transfer
-        """
-        self.actions.append(chunk)
-
-    def _sort_actions_by_regions(self) -> Dict[Tuple[int, int], List[Tuple[int, int]]]:
-        regions: Dict[Tuple[int, int], List[Tuple[int, int]]] = {}
-        for chunk in self.actions:
-            region_file: Tuple[int, int] = World.get_region_coordinates(chunk)
-            if region_file not in regions.keys():
-                regions[region_file] = []
-            regions[region_file].append(chunk)
-        return regions
-
-    def perform(self) -> None:
-        """
-        performs all set chunk backup restorations
-        """
-        for region, chunks in self._sort_actions_by_regions().items():
-            target_region = Region(region, self.target_world)
-            backup_region = Region(region, self.backup_world)
-            for chunk in chunks:
-                target_region.set_chunk(chunk, backup_region.get_chunk(chunk))
-            target_region.flush()
-
-
-class World:
-    """
-    represents a minecraft world or a backed up world
-    """
-    def __init__(self, path: str):
-        self.path: str = path
-
-    def get_region(self, chunk: Tuple[int, int]) -> Region:
-        """
-        gets the Region the specified chunk is in
-        :param chunk: the chunk the Region is searched for
-        :return: the Region the specified chunks is in
-        """
-        return Region(World.get_region_coordinates(chunk), self)
-
-    @staticmethod
-    def get_region_coordinates(chunk: Tuple[int, int]) -> Tuple[int, int]:
-        """
-        calculated the region coordinates for the given chunk
-        from https://minecraft.fandom.com/wiki/Region_file_format#Region_file_location
-        :param chunk: the chunk the Region is searched for
-        :return: the region coordinates of the chunk
-        """
-        return chunk[0] >> 5, chunk[1] >> 5
-
-    def get_region_file(self, region: Tuple[int, int]) -> Optional[str]:
-        """
-        gets the path to a region file
-        :param region: the region coordinates
-        :return: the path of the region file
-        """
-        p = joinpath(self.path, "region", f"r.{region[0]}.{region[1]}.mca")
-        if not isfile(p):
-            return None
-        return p
+if TYPE_CHECKING:
+    from .world import World
 
 
 class Region:
