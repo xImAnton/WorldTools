@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from typing import Tuple, TYPE_CHECKING, List
-from ..exceptions import ChunkNotFoundException
+from ..exceptions import ChunkNotFoundException, SectionNotPresentException
 from ..nbt import NBTParser
 from io import BytesIO
 import zlib
 import gzip
-import struct
 import numpy
 
 if TYPE_CHECKING:
@@ -14,7 +13,6 @@ if TYPE_CHECKING:
 
 
 class Chunk:
-
     @staticmethod
     def decompress(data: bytes, method: int):
         if method == 1:
@@ -43,23 +41,27 @@ class Chunk:
         for sec in range(len(self.data["Level"]["Sections"])):
             if self.data["Level"]["Sections"][sec]["Y"] == y:
                 return ChunkSection(self, sec)
+        raise SectionNotPresentException(f"Section y={y} is not present in chunk {self.chunk}", (self.chunk[0], y, self.chunk[1]))
 
-
-def reverse_bits(n: int):
-    pos = n.bit_length() - 1
-    reverse = 0
-    while pos >= 0 & n:
-        if n & 1:
-            reverse = reverse | (1 << pos)
-        n >>= 1
-        pos -= 1
-    return reverse
+    def generate_heightmap(self):
+        heightmap = {}
+        for i in range(16):
+            for h in range(16):
+                heightmap[(i, h)] = None
+        for y in reversed(range(17)):
+            try:
+                s = self.get_section(y)
+                # TODO: Think of algorith, finish
+            except SectionNotPresentException:
+                continue
 
 
 class ChunkSection:
     def __init__(self, chunk: Chunk, index: int):
         self.chunk: Chunk = chunk
         self.index: int = index
+        if "Palette" not in self.chunk.data["Level"]["Sections"][index].keys():
+            raise SectionNotPresentException(f"Section y={index} is not present in chunk {self.chunk.chunk}", (self.chunk.chunk[0], index, self.chunk.chunk[1]))
         self.palette = self.chunk.data["Level"]["Sections"][index]["Palette"]
         self.block_states: BlockStates = BlockStates(self.chunk.data["Level"]["Sections"][index]["BlockStates"])
 
@@ -79,7 +81,8 @@ class BlockStates:
     def longarray_to_palette_indices(long_array: List[int]) -> numpy.ndarray:
         """
         FUNCTION FROM https://github.com/overviewer/Minecraft-Overviewer/blob/86963c5de9b237baab3b7be5b017500075357b17/overviewer_core/world.py#L1222
-        HUGE THANKS, I HAD NO IDEA HOW TO SOLVE THIS IN PYTHON
+        HUGE THANKS <3, I HAD NO IDEA HOW TO SOLVE THIS IN PYTHON
+
         converts a Python List of Longs to numpy array of shorts
         :param long_array: the longs array to convert
         :return: numpy array of BlockStates

@@ -4,6 +4,8 @@ from typing import Tuple, Optional
 from os.path import join as joinpath
 from os.path import isfile
 from .region import Region
+from .chunk import Chunk, ChunkSection
+from ..nbt.types import Compound
 
 
 class World:
@@ -21,14 +23,20 @@ class World:
         """
         return Region(World.get_region_coordinates(chunk), self)
 
-    def get_chunk(self, chunk: Tuple[int, int]):
+    def get_chunk(self, chunk: Tuple[int, int]) -> Chunk:
         return self.get_region(chunk).get_chunk(chunk)
 
-    def get_block(self, position: Tuple[int, int, int]):
-        chunk = self.get_chunk_section((position[0] // 16, position[1] // 16, position[2] // 16))
+    def get_chunk_for_block(self, position: Tuple[int, int, int]) -> Chunk:
+        return self.get_chunk((position[0] // 16, position[2] // 16))
+
+    def get_chunk_section_for_block(self, position: Tuple[int, int, int]) -> ChunkSection:
+        return self.get_chunk_section((position[0] // 16, position[1] // 16, position[2] // 16))
+
+    def get_block(self, position: Tuple[int, int, int]) -> Compound:
+        chunk = self.get_chunk_section_for_block(position)
         return chunk.get_block((position[0] % 16, position[1] % 16, position[2] % 16))
 
-    def get_chunk_section(self, section: Tuple[int, int, int]):
+    def get_chunk_section(self, section: Tuple[int, int, int]) -> ChunkSection:
         return self.get_chunk((section[0], section[2])).get_section(section[1])
 
     @staticmethod
