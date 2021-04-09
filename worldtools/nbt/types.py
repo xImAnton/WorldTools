@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional, Type
 from struct import unpack
 from io import BytesIO
+import json
 
 
 class NBTBase:
@@ -180,6 +181,9 @@ class Compound(dict, NBTBase):
             item = NBTBase.get_type(type_id).unpack(data)
             out[name] = item
         return Compound(out)
+
+    def json(self):
+        return json.dumps(self, indent=4)
 
 
 class IntArray(list, NBTBase):

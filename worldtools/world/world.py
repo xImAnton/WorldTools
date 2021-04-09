@@ -21,6 +21,16 @@ class World:
         """
         return Region(World.get_region_coordinates(chunk), self)
 
+    def get_chunk(self, chunk: Tuple[int, int]):
+        return self.get_region(chunk).get_chunk(chunk)
+
+    def get_block(self, position: Tuple[int, int, int]):
+        chunk = self.get_chunk_section((position[0] // 16, position[1] // 16, position[2] // 16))
+        return chunk.get_block((position[0] % 16, position[1] % 16, position[2] % 16))
+
+    def get_chunk_section(self, section: Tuple[int, int, int]):
+        return self.get_chunk((section[0], section[2])).get_section(section[1])
+
     @staticmethod
     def get_region_coordinates(chunk: Tuple[int, int]) -> Tuple[int, int]:
         """

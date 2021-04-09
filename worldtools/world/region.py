@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Tuple, Optional, TYPE_CHECKING
 from ..exceptions import ChunkNotFoundException
 from ..util import ceil
+from .chunk import Chunk
 
 if TYPE_CHECKING:
     from .world import World
@@ -48,18 +49,13 @@ class Region:
         sector_length *= 2 ** 12
         return offset, sector_length
 
-    def get_chunk(self, chunk: Tuple[int, int]) -> Optional[bytes]:
+    def get_chunk(self, chunk: Tuple[int, int]) -> Chunk:
         """
         reads the chunk data for the specified chunk from the region file
         :param chunk: the chunk to read
         :return: the (compressed) chunk data
         """
-        loc = self.get_chunk_location(chunk)
-        if loc is None:
-            return None
-        offset, sector_length = loc
-        chunk_data = self.data[offset:offset + sector_length]
-        return chunk_data
+        return Chunk(chunk, self)
 
     def set_chunk(self, chunk: Tuple[int, int], data: bytes) -> None:
         """
