@@ -24,6 +24,6 @@ class NBTParser:
         return NBTParser._parse(gzip.decompress(data))
 
     @staticmethod
-    def _parse(data: Union[bytes]):
+    def _parse(data: bytes):
         root_compound = Compound.unpack(BytesIO(data))
         return root_compound

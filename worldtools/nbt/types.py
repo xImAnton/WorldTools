@@ -8,6 +8,9 @@ from io import BytesIO
 class NBTBase:
     """
     Interface for all NBT Components
+
+    Documentation:
+      - https://minecraft.fandom.com/wiki/NBT_format
     """
     DATATYPE_ID = -1
 
