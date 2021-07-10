@@ -8,10 +8,10 @@ def squarerange(x):
             yield i, j
 
 
-w = worldtools.World("D:\\data\\minecraft\\saves\\Target")
+w = worldtools.World("D:\\data\\minecraft\\saves\\Target", enable_caching=True)
 
 start_time = time.time()
-for position in squarerange(8):
+for position in squarerange(16):
     w.get_chunk(position).get_heightmap(worldtools.HeightMap.HIGHEST_SOLID).get_blocks()
 print(f"Took {(time.time() - start_time) * 1000} Milliseconds")
 
