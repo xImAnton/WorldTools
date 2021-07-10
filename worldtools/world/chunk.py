@@ -7,6 +7,7 @@ from io import BytesIO
 import zlib
 import gzip
 import numpy
+from .heightmap import HeightMap
 
 if TYPE_CHECKING:
     from .region import Region
@@ -37,24 +38,17 @@ class Chunk:
 
         self.data = NBTParser.parse(Chunk.decompress(data.read(bytes_length), compression_method), False)
 
+    def get_block(self, coords: Tuple[int, int, int]):
+        return self.region.world.get_block(coords)
+
+    def get_heightmap(self, type_: str):
+        return HeightMap(self, type_)
+
     def get_section(self, y):
         for sec in range(len(self.data["Level"]["Sections"])):
             if self.data["Level"]["Sections"][sec]["Y"] == y:
                 return ChunkSection(self, sec)
         raise SectionNotPresentException(f"Section y={y} is not present in chunk {self.chunk}", (self.chunk[0], y, self.chunk[1]))
-
-    def generate_heightmap(self):
-        heightmap = {}
-        for i in range(16):
-            for h in range(16):
-                heightmap[(i, h)] = None
-        for y in reversed(range(17)):
-            try:
-                s = self.get_section(y)
-                # TODO: Think of algorith, finish
-            except SectionNotPresentException:
-                continue
-
 
 class ChunkSection:
     def __init__(self, chunk: Chunk, index: int):

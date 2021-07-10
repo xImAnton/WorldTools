@@ -36,5 +36,5 @@ class ChunkRestorer:
             target_region = Region(region, self.target_world)
             backup_region = Region(region, self.backup_world)
             for chunk in chunks:
-                target_region.set_chunk(chunk, backup_region.get_chunk(chunk))
+                target_region.set_chunk(chunk, backup_region.get_raw_chunk(chunk))
             target_region.flush()

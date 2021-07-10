@@ -49,11 +49,25 @@ class Region:
         sector_length *= 2 ** 12
         return offset, sector_length
 
+    def get_raw_chunk(self, chunk: Tuple[int, int]) -> bytes:
+        """
+        reads the raw chunk data for a chunk from the region file
+        :param chunk: the chunk coordinates
+        :return: the raw chunk bytes
+        """
+        loc = self.get_chunk_location(chunk)
+        if loc is None:
+            raise ChunkNotFoundException(
+                f"Chunk {chunk} is not present in Region File {self.world.get_region_file(self.region)}",
+                chunk)
+        offset, sector_length = loc
+        return self.data[offset:offset + sector_length]
+
     def get_chunk(self, chunk: Tuple[int, int]) -> Chunk:
         """
-        reads the chunk data for the specified chunk from the region file
+        reads the chunk data for the specified chunk from the region file and parses it into a Chunk object
         :param chunk: the chunk to read
-        :return: the (compressed) chunk data
+        :return: the parsed Chunk
         """
         return Chunk(chunk, self)
 
