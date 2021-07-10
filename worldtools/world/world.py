@@ -12,22 +12,31 @@ class World:
     """
     represents a minecraft world or a backed up world
     """
-    def __init__(self, path: str):
+    def __init__(self, path: str, enable_caching: bool = True):
         self.path: str = path
+        self.caching: bool = enable_caching
+        if self.caching:
+            self.region_cache = {}
 
-    def get_region(self, chunk: Tuple[int, int]) -> Region:
+    def get_region(self, chunk: Tuple[int, int], use_cache: bool = True) -> Region:
         """
         gets the Region the specified chunk is in
         :param chunk: the chunk the Region is searched for
+        :param use_cache: whether to use a cached value
         :return: the Region the specified chunks is in
         """
+        position = self.get_region_coordinates(chunk)
+        if self.caching and use_cache:
+            if position not in self.region_cache:
+                self.region_cache[position] = Region(World.get_region_coordinates(chunk), self)
+            return self.region_cache[position]
         return Region(World.get_region_coordinates(chunk), self)
 
-    def get_chunk(self, chunk: Tuple[int, int]) -> Chunk:
-        return self.get_region(chunk).get_chunk(chunk)
+    def get_chunk(self, chunk: Tuple[int, int], use_cache: bool = True) -> Chunk:
+        return self.get_region(chunk, use_cache=use_cache).get_chunk(chunk)
 
-    def get_chunk_for_block(self, position: Tuple[int, int, int]) -> Chunk:
-        return self.get_chunk((position[0] // 16, position[2] // 16))
+    def get_chunk_for_block(self, position: Tuple[int, int, int], region_cache: bool = True, chunk_cache: bool = True) -> Chunk:
+        return self.get_chunk((position[0] // 16, position[2] // 16), region_cache=region_cache, chunk_cache=chunk_cache)
 
     def get_chunk_section_for_block(self, position: Tuple[int, int, int]) -> ChunkSection:
         return self.get_chunk_section((position[0] // 16, position[1] // 16, position[2] // 16))
