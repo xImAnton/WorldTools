@@ -4,7 +4,6 @@ import struct
 import time
 from typing import Tuple, Optional, TYPE_CHECKING
 from ..exceptions import ChunkNotFoundException
-from ..util import ceil
 from .chunk import Chunk
 
 if TYPE_CHECKING:
@@ -77,7 +76,8 @@ class Region:
             raise ChunkNotFoundException(f"Chunk {chunk} is not present in Region File {self.world.get_region_file(self.region)}", chunk)
         offset, _ = loc
         # set timestamp
-        self.data = self.data[:offset + 4096] + struct.pack(">I", int(time.time())) + self.data[offset + 4100:]
+        t_off = Region.get_offset_offset(chunk) + 4096
+        self.data = self.data[:t_off] + struct.pack(">I", int(time.time())) + self.data[t_off + 4:]
         # set chunk data
         self.data = self.data[:offset] + data + self.data[offset + len(data):]
         # set sector length
