@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setuptools.setup(
     name="worldtools-xImAnton",
-    version="0.1.0",
+    version="0.1.1",
     author="xImAnton_",
     description="A python module for reading and writing Minecraft Worlds",
     long_description=long_desc,
@@ -21,7 +21,7 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],
-    package_dir={"": "worldtools"},
-    packages=setuptools.find_packages(where="worldtools"),
+    package_dir={"": "."},
+    packages=setuptools.find_packages(where="."),
     python_requires=">=3.8"
 )

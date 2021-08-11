@@ -1,6 +1,7 @@
 import worldtools
 import time
-
+import random
+"""
 
 def squarerange(x):
     for i in range(x):
@@ -16,14 +17,16 @@ for position in squarerange(16):
 print(f"Took {(time.time() - start_time) * 1000} Milliseconds")
 
 
-"""
 w = worldtools.World("D:\\data\\minecraft\\saves\\TEEST")
 b = (18, 256, 52)
 c = w.get_chunk_for_block(b)
 print(c.generate_heightmap())
 print(c.data)
-
-restorer = worldtools.ChunkRestorer("D:\\data\\minecraft\\saves\\Target", "D:\\data\\minecraft\\saves\\Backup")
-restorer.add_chunk((0, 0))
-restorer.perform()
 """
+
+restorer = worldtools.ChunkRestorer("D:\\data\\minecraft\\saves\\server\\world", "D:\\data\\minecraft\\saves\\server\\backup")
+
+for i in range(8):
+    restorer.add_chunk((random.randint(-7, 7), random.randint(-7, 7)))
+
+restorer.perform()

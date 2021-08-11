@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import struct
+import time
 from typing import Tuple, Optional, TYPE_CHECKING
 from ..exceptions import ChunkNotFoundException
 from ..util import ceil
@@ -63,14 +65,6 @@ class Region:
         offset, sector_length = loc
         return self.data[offset:offset + sector_length]
 
-    def get_chunk(self, chunk: Tuple[int, int]) -> Chunk:
-        """
-        reads the chunk data for the specified chunk from the region file and parses it into a Chunk object
-        :param chunk: the chunk to read
-        :return: the parsed Chunk
-        """
-        return Chunk(chunk, self)
-
     def set_chunk(self, chunk: Tuple[int, int], data: bytes) -> None:
         """
         sets a chunk in the region file
@@ -81,12 +75,22 @@ class Region:
         loc = self.get_chunk_location(chunk)
         if loc is None:
             raise ChunkNotFoundException(f"Chunk {chunk} is not present in Region File {self.world.get_region_file(self.region)}", chunk)
-        offset, sector_length = loc
+        offset, _ = loc
+        # set timestamp
+        self.data = self.data[:offset + 4096] + struct.pack(">I", int(time.time())) + self.data[offset + 4100:]
         # set chunk data
-        self.data = self.data[:offset] + data + self.data[offset + sector_length:]
-        sector_length = (ceil(len(data), 4096) // 4096).to_bytes(1, "big", signed=False)
+        self.data = self.data[:offset] + data + self.data[offset + len(data):]
         # set sector length
-        self.data = self.data[:Region.get_offset_offset(chunk) + 3] + sector_length + self.data[Region.get_offset_offset(chunk) + 4:]
+        sector_count = int(1 + ((len(data) - 1) / 4096)).to_bytes(1, "big", signed=False)
+        self.data = self.data[:Region.get_offset_offset(chunk) + 3] + sector_count + self.data[Region.get_offset_offset(chunk) + 4:]
+
+    def get_chunk(self, chunk: Tuple[int, int]) -> Chunk:
+        """
+        reads the chunk data for the specified chunk from the region file and parses it into a Chunk object
+        :param chunk: the chunk to read
+        :return: the parsed Chunk
+        """
+        return Chunk(chunk, self)
 
     def flush(self) -> None:
         """
